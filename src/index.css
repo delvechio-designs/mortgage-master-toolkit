@@ -2,13 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Financial Services Design System - Professional mortgage calculator styling */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 210 40% 98%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -17,8 +15,10 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Financial brand colors */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-dark: 217 91% 45%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -26,15 +26,38 @@ All colors MUST be HSL.
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 142 76% 36%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 217 91% 60%;
+
+    /* Financial calculator specific colors */
+    --mortgage-blue: 217 91% 60%;
+    --mortgage-navy: 222.2 47.4% 11.2%;
+    --success-green: 142 76% 36%;
+    --warning-amber: 45 93% 47%;
+    --neutral-slate: 215.4 16.3% 46.9%;
+
+    /* Chart colors */
+    --chart-principal: 217 91% 60%;
+    --chart-interest: 45 93% 47%;
+    --chart-taxes: 142 76% 36%;
+    --chart-insurance: 262 83% 58%;
+    --chart-pmi: 0 84.2% 60.2%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 45%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 28%));
+    --gradient-background: linear-gradient(180deg, hsl(210 40% 98%), hsl(220 15% 95%));
+
+    /* Shadows */
+    --shadow-card: 0 4px 6px -1px hsl(217 91% 60% / 0.1), 0 2px 4px -1px hsl(217 91% 60% / 0.06);
+    --shadow-elevated: 0 10px 15px -3px hsl(217 91% 60% / 0.1), 0 4px 6px -2px hsl(217 91% 60% / 0.05);
 
     --radius: 0.5rem;
 
@@ -65,8 +88,9 @@ All colors MUST be HSL.
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
+    --primary: 217 91% 65%;
     --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-dark: 217 91% 50%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -74,7 +98,7 @@ All colors MUST be HSL.
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 142 76% 45%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -82,7 +106,19 @@ All colors MUST be HSL.
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 217 91% 65%;
+
+    /* Dark mode financial colors */
+    --mortgage-blue: 217 91% 65%;
+    --mortgage-navy: 210 40% 98%;
+    --success-green: 142 76% 45%;
+    --warning-amber: 45 93% 55%;
+    --neutral-slate: 215 20.2% 65.1%;
+
+    /* Dark mode gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 65%), hsl(217 91% 50%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 45%), hsl(142 76% 35%));
+    --gradient-background: linear-gradient(180deg, hsl(222.2 84% 4.9%), hsl(217.2 32.6% 17.5%));
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -101,5 +137,44 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    background: var(--gradient-background);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Financial calculator specific styles */
+  .calculator-card {
+    @apply bg-card border border-border rounded-lg p-6;
+    box-shadow: var(--shadow-card);
+  }
+
+  .calculator-tab {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+  }
+
+  .calculator-tab.active {
+    background: var(--gradient-primary);
+    @apply text-primary-foreground;
+  }
+
+  .calculator-tab:not(.active) {
+    @apply text-muted-foreground hover:text-foreground hover:bg-secondary;
+  }
+
+  .financial-input {
+    @apply w-full px-3 py-2 border border-input rounded-md bg-background text-sm;
+    transition: all 0.2s ease;
+  }
+
+  .financial-input:focus {
+    @apply ring-2 ring-ring ring-offset-2 outline-none;
+  }
+
+  .payment-breakdown {
+    @apply grid gap-4 p-4 bg-secondary/50 rounded-lg;
+  }
+
+  .metric-card {
+    @apply p-4 bg-card rounded-lg border border-border;
+    box-shadow: var(--shadow-card);
   }
 }

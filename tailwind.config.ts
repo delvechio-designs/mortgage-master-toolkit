@@ -22,6 +22,7 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          dark: "hsl(var(--primary-dark))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -46,6 +47,27 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        // Financial calculator colors
+        mortgage: {
+          blue: "hsl(var(--mortgage-blue))",
+          navy: "hsl(var(--mortgage-navy))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success-green))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning-amber))",
+        },
+        neutral: {
+          slate: "hsl(var(--neutral-slate))",
+        },
+        chart: {
+          principal: "hsl(var(--chart-principal))",
+          interest: "hsl(var(--chart-interest))",
+          taxes: "hsl(var(--chart-taxes))",
+          insurance: "hsl(var(--chart-insurance))",
+          pmi: "hsl(var(--chart-pmi))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
