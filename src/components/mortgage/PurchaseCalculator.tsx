@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,8 +7,12 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
+import { useMortgageRates } from "@/hooks/useMortgageRates";
+import { RefreshCw } from "lucide-react";
 
 export const PurchaseCalculator = () => {
+  const { rates, loading: ratesLoading, error: ratesError, refreshRates } = useMortgageRates();
+  
   const [homeValue, setHomeValue] = useState(300000);
   const [downPaymentPercent, setDownPaymentPercent] = useState(20);
   const [loanTerm, setLoanTerm] = useState(30);
@@ -20,6 +24,14 @@ export const PurchaseCalculator = () => {
   const [extraPayment, setExtraPayment] = useState(0);
   const [lumpSum, setLumpSum] = useState(0);
   const [lumpSumYear, setLumpSumYear] = useState(5);
+
+  // Update interest rate when live rates load
+  useEffect(() => {
+    if (rates && !ratesLoading) {
+      const defaultRate = loanTerm === 15 ? rates.fifteenYear : rates.thirtyYear;
+      setInterestRate(defaultRate);
+    }
+  }, [rates, ratesLoading, loanTerm]);
 
   const downPaymentAmount = (homeValue * downPaymentPercent) / 100;
   const loanAmount = homeValue - downPaymentAmount;
@@ -173,7 +185,26 @@ export const PurchaseCalculator = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="interest-rate">Interest Rate (%)</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="interest-rate">Interest Rate (%)</Label>
+                <div className="flex items-center gap-2">
+                  {ratesError && (
+                    <span className="text-xs text-warning">Estimated</span>
+                  )}
+                  {!ratesError && (
+                    <span className="text-xs text-success">Live Rate</span>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={refreshRates}
+                    disabled={ratesLoading}
+                    className="h-6 w-6 p-0"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${ratesLoading ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
+              </div>
               <Input
                 id="interest-rate"
                 type="number"
@@ -182,6 +213,11 @@ export const PurchaseCalculator = () => {
                 onChange={(e) => setInterestRate(Number(e.target.value))}
                 className="financial-input"
               />
+              {rates.lastUpdated && !ratesError && (
+                <p className="text-xs text-muted-foreground">
+                  Updated: {new Date(rates.lastUpdated).toLocaleDateString()}
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

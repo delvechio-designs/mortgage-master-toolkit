@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMortgageRates } from "@/hooks/useMortgageRates";
+import { RefreshCw } from "lucide-react";
 
 export const RefinanceCalculator = () => {
+  const { rates, loading: ratesLoading, error: ratesError, refreshRates } = useMortgageRates();
+  
   // Current loan details
   const [currentBalance, setCurrentBalance] = useState(250000);
   const [currentRate, setCurrentRate] = useState(6.5);
@@ -18,6 +22,14 @@ export const RefinanceCalculator = () => {
   const [newTerm, setNewTerm] = useState(30);
   const [closingCosts, setClosingCosts] = useState(3500);
   const [cashOut, setCashOut] = useState(0);
+
+  // Update new rate when live rates load (typically lower than current)
+  useEffect(() => {
+    if (rates && !ratesLoading) {
+      const defaultNewRate = newTerm === 15 ? rates.fifteenYear : rates.thirtyYear;
+      setNewRate(defaultNewRate);
+    }
+  }, [rates, ratesLoading, newTerm]);
 
   // Calculate new loan details
   const newLoanAmount = currentBalance + closingCosts + cashOut;
@@ -98,7 +110,26 @@ export const RefinanceCalculator = () => {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="new-rate">New Interest Rate (%)</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="new-rate">New Interest Rate (%)</Label>
+                <div className="flex items-center gap-2">
+                  {ratesError && (
+                    <span className="text-xs text-warning">Estimated</span>
+                  )}
+                  {!ratesError && (
+                    <span className="text-xs text-success">Live Rate</span>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={refreshRates}
+                    disabled={ratesLoading}
+                    className="h-6 w-6 p-0"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${ratesLoading ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
+              </div>
               <Input
                 id="new-rate"
                 type="number"
@@ -107,6 +138,11 @@ export const RefinanceCalculator = () => {
                 onChange={(e) => setNewRate(Number(e.target.value))}
                 className="financial-input"
               />
+              {rates.lastUpdated && !ratesError && (
+                <p className="text-xs text-muted-foreground">
+                  Updated: {new Date(rates.lastUpdated).toLocaleDateString()}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="new-term">New Loan Term</Label>

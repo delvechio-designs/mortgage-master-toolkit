@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { useMortgageRates } from "@/hooks/useMortgageRates";
+import { RefreshCw } from "lucide-react";
 
 interface LoanProgram {
   id: string;
@@ -17,11 +19,20 @@ interface LoanProgram {
 }
 
 export const AffordabilityCalculator = () => {
+  const { rates, loading: ratesLoading, error: ratesError, refreshRates } = useMortgageRates();
+  
   const [grossIncome, setGrossIncome] = useState(5000);
   const [monthlyDebts, setMonthlyDebts] = useState(500);
   const [homePrice, setHomePrice] = useState(200000);
   const [downPaymentPercent, setDownPaymentPercent] = useState(20);
   const [interestRate, setInterestRate] = useState(7.0);
+
+  // Update interest rate when live rates load
+  useEffect(() => {
+    if (rates && !ratesLoading) {
+      setInterestRate(rates.thirtyYear);
+    }
+  }, [rates, ratesLoading]);
   const [propertyTax, setPropertyTax] = useState(0.6);
   const [homeInsurance, setHomeInsurance] = useState(1200);
   const [hoaDues, setHoaDues] = useState(0);
@@ -170,7 +181,26 @@ export const AffordabilityCalculator = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="interest-rate">Interest Rate (%)</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="interest-rate">Interest Rate (%)</Label>
+                  <div className="flex items-center gap-2">
+                    {ratesError && (
+                      <span className="text-xs text-warning">Estimated</span>
+                    )}
+                    {!ratesError && (
+                      <span className="text-xs text-success">Live Rate</span>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={refreshRates}
+                      disabled={ratesLoading}
+                      className="h-6 w-6 p-0"
+                    >
+                      <RefreshCw className={`h-3 w-3 ${ratesLoading ? 'animate-spin' : ''}`} />
+                    </Button>
+                  </div>
+                </div>
                 <Input
                   id="interest-rate"
                   type="number"
@@ -179,6 +209,11 @@ export const AffordabilityCalculator = () => {
                   onChange={(e) => setInterestRate(Number(e.target.value))}
                   className="financial-input"
                 />
+                {rates.lastUpdated && !ratesError && (
+                  <p className="text-xs text-muted-foreground">
+                    Updated: {new Date(rates.lastUpdated).toLocaleDateString()}
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
