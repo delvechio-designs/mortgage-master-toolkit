@@ -59,19 +59,6 @@
     --shadow-card: 0 4px 6px -1px hsl(217 91% 60% / 0.1), 0 2px 4px -1px hsl(217 91% 60% / 0.06);
     --shadow-elevated: 0 10px 15px -3px hsl(217 91% 60% / 0.1), 0 4px 6px -2px hsl(217 91% 60% / 0.05);
 
-    /* Calculator-specific colors */
-    --calculator-sidebar: 220 25% 12%;
-    --calculator-sidebar-light: 220 25% 16%;
-    --calculator-input-bg: 220 25% 20%;
-    
-    /* Metric card colors */
-    --metric-blue: 215 70% 50%;
-    --metric-green: 142 76% 36%;
-    --metric-orange: 25 95% 53%;
-    --metric-purple: 270 70% 55%;
-    --metric-red: 0 84% 60%;
-    --metric-teal: 180 70% 45%;
-
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;

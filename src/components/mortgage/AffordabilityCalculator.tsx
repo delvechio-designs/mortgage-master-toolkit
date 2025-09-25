@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useMortgageRates } from "@/hooks/useMortgageRates";
 import { RefreshCw } from "lucide-react";
-import { MetricCard } from "@/components/ui/metric-card";
 
 interface LoanProgram {
   id: string;
@@ -95,320 +94,289 @@ export const AffordabilityCalculator = () => {
 
   return (
     <div className="grid lg:grid-cols-3 gap-6">
-      {/* Dark Sidebar - Inputs */}
-      <div className="lg:col-span-1">
-        <Card className="bg-calculator-sidebar border-calculator-sidebar-light">
+      {/* Input Controls */}
+      <div className="lg:col-span-2 space-y-6">
+        {/* Loan Program Selection */}
+        <Card>
           <CardHeader>
-            <CardTitle className="text-white">Affordability Calculator</CardTitle>
-            <div className="flex flex-wrap gap-2 mt-4">
+            <CardTitle>Loan Program</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               {loanPrograms.map((program) => (
                 <Button
                   key={program.id}
                   variant={selectedProgram === program.id ? "default" : "outline"}
-                  size="sm"
                   onClick={() => setSelectedProgram(program.id)}
-                  className={selectedProgram === program.id ? "" : "border-calculator-sidebar-light text-gray-300 hover:bg-calculator-sidebar-light"}
+                  className="text-sm"
                 >
                   {program.name}
                 </Button>
               ))}
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="gross-income" className="text-white">Gross Income (Monthly)</Label>
-                <Input
-                  id="gross-income"
-                  type="number"
-                  value={grossIncome}
-                  onChange={(e) => setGrossIncome(Number(e.target.value))}
-                  className="bg-calculator-input border-calculator-sidebar-light text-white"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="monthly-debts" className="text-white">Monthly Debts</Label>
-                <Input
-                  id="monthly-debts"
-                  type="number"
-                  value={monthlyDebts}
-                  onChange={(e) => setMonthlyDebts(Number(e.target.value))}
-                  className="bg-calculator-input border-calculator-sidebar-light text-white"
-                />
-              </div>
-            </div>
+          </CardContent>
+        </Card>
 
+        {/* Income and Debts */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Monthly Income & Debts</CardTitle>
+          </CardHeader>
+          <CardContent className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="home-price" className="text-white">Home Price</Label>
+              <Label htmlFor="gross-income">Gross Income (Monthly)</Label>
               <Input
-                id="home-price"
+                id="gross-income"
                 type="number"
-                value={homePrice}
-                onChange={(e) => setHomePrice(Number(e.target.value))}
-                className="bg-calculator-input border-calculator-sidebar-light text-white"
+                value={grossIncome}
+                onChange={(e) => setGrossIncome(Number(e.target.value))}
+                className="financial-input"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="monthly-debts">Monthly Debts</Label>
+              <Input
+                id="monthly-debts"
+                type="number"
+                value={monthlyDebts}
+                onChange={(e) => setMonthlyDebts(Number(e.target.value))}
+                className="financial-input"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Home Price and Down Payment */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Property Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-3">
+              <Label>Home Price: ${homePrice.toLocaleString()}</Label>
               <Slider
                 value={[homePrice]}
                 onValueChange={(value) => setHomePrice(value[0])}
-                max={1000000}
                 min={50000}
+                max={1000000}
                 step={5000}
-                className="mt-2"
+                className="w-full"
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="down-payment" className="text-white">Down Payment</Label>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Input
-                    id="down-payment"
-                    type="number"
-                    value={(homePrice * downPaymentPercent / 100).toLocaleString()}
-                    readOnly
-                    className="bg-calculator-input border-calculator-sidebar-light text-white"
-                  />
-                </div>
-                <div className="w-20">
-                  <div className="flex">
-                    <Input
-                      type="number"
-                      value={downPaymentPercent}
-                      onChange={(e) => setDownPaymentPercent(Number(e.target.value))}
-                      className="bg-calculator-input border-calculator-sidebar-light text-white rounded-r-none"
-                    />
-                    <div className="px-2 py-2 bg-calculator-input border border-l-0 border-calculator-sidebar-light text-white text-sm flex items-center rounded-r-md">
-                      %
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="loan-amount" className="text-white">Loan Amount</Label>
-              <Input
-                id="loan-amount"
-                type="number"
-                value={loanAmount}
-                readOnly
-                className="bg-calculator-input border-calculator-sidebar-light text-white"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="interest-rate" className="text-white">Interest Rate</Label>
-                <div className="flex items-center gap-2">
-                  {ratesError && (
-                    <span className="text-xs text-orange-400">Estimated</span>
-                  )}
-                  {!ratesError && (
-                    <span className="text-xs text-green-400">Live Rate</span>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={refreshRates}
-                    disabled={ratesLoading}
-                    className="h-6 w-6 p-0 text-white hover:bg-calculator-sidebar-light"
-                  >
-                    <RefreshCw className={`h-3 w-3 ${ratesLoading ? 'animate-spin' : ''}`} />
-                  </Button>
-                </div>
-              </div>
-              <Input
-                id="interest-rate"
-                type="number"
-                step="0.125"
-                value={interestRate}
-                onChange={(e) => setInterestRate(Number(e.target.value))}
-                className="bg-calculator-input border-calculator-sidebar-light text-white"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            
+            <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-white">Prop Tax (Yearly)</Label>
-                <div className="flex">
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={propertyTax}
-                    onChange={(e) => setPropertyTax(Number(e.target.value))}
-                    className="bg-calculator-input border-calculator-sidebar-light text-white rounded-r-none"
-                  />
-                  <div className="px-2 py-2 bg-calculator-input border border-l-0 border-calculator-sidebar-light text-white text-sm flex items-center rounded-r-md">
-                    %
-                  </div>
-                </div>
+                <Label>Down Payment: {downPaymentPercent}%</Label>
+                <Slider
+                  value={[downPaymentPercent]}
+                  onValueChange={(value) => setDownPaymentPercent(value[0])}
+                  min={currentProgram?.minDownPayment || 0}
+                  max={50}
+                  step={0.5}
+                  className="w-full"
+                />
+                <p className="text-sm text-muted-foreground">
+                  ${downPaymentAmount.toLocaleString()}
+                </p>
               </div>
+              
               <div className="space-y-2">
-                <Label className="text-white">Homeowners Insurance (Yearly)</Label>
-                <div className="flex">
-                  <div className="px-2 py-2 bg-calculator-input border border-r-0 border-calculator-sidebar-light text-white text-sm flex items-center rounded-l-md">
-                    $
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="interest-rate">Interest Rate (%)</Label>
+                  <div className="flex items-center gap-2">
+                    {ratesError && (
+                      <span className="text-xs text-warning">Estimated</span>
+                    )}
+                    {!ratesError && (
+                      <span className="text-xs text-success">Live Rate</span>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={refreshRates}
+                      disabled={ratesLoading}
+                      className="h-6 w-6 p-0"
+                    >
+                      <RefreshCw className={`h-3 w-3 ${ratesLoading ? 'animate-spin' : ''}`} />
+                    </Button>
                   </div>
-                  <Input
-                    type="number"
-                    value={homeInsurance}
-                    onChange={(e) => setHomeInsurance(Number(e.target.value))}
-                    className="bg-calculator-input border-calculator-sidebar-light text-white rounded-l-none"
-                  />
                 </div>
+                <Input
+                  id="interest-rate"
+                  type="number"
+                  step="0.125"
+                  value={interestRate}
+                  onChange={(e) => setInterestRate(Number(e.target.value))}
+                  className="financial-input"
+                />
+                {rates.lastUpdated && !ratesError && (
+                  <p className="text-xs text-muted-foreground">
+                    Updated: {new Date(rates.lastUpdated).toLocaleDateString()}
+                  </p>
+                )}
               </div>
             </div>
+          </CardContent>
+        </Card>
 
+        {/* Additional Costs */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Additional Monthly Costs</CardTitle>
+          </CardHeader>
+          <CardContent className="grid md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label className="text-white">HOA Dues (Monthly)</Label>
+              <Label htmlFor="property-tax">Property Tax (% yearly)</Label>
               <Input
+                id="property-tax"
+                type="number"
+                step="0.1"
+                value={propertyTax}
+                onChange={(e) => setPropertyTax(Number(e.target.value))}
+                className="financial-input"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="home-insurance">Home Insurance (yearly)</Label>
+              <Input
+                id="home-insurance"
+                type="number"
+                value={homeInsurance}
+                onChange={(e) => setHomeInsurance(Number(e.target.value))}
+                className="financial-input"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="hoa-dues">HOA Dues (monthly)</Label>
+              <Input
+                id="hoa-dues"
                 type="number"
                 value={hoaDues}
                 onChange={(e) => setHoaDues(Number(e.target.value))}
-                className="bg-calculator-input border-calculator-sidebar-light text-white"
+                className="financial-input"
               />
             </div>
-
-            <Button className="w-full mt-6" size="lg">
-              GET A QUOTE
-            </Button>
           </CardContent>
         </Card>
       </div>
 
-      {/* Results Area */}
-      <div className="lg:col-span-2 space-y-6">
-        {/* Top Metric Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <MetricCard
-            title="Monthly Mortgage Payment"
-            value={`$${totalMonthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
-            color="blue"
-          />
-          <MetricCard
-            title="Loan Amount"
-            value={`$${loanAmount.toLocaleString()}`}
-            color="blue"
-          />
-          <MetricCard
-            title="Your Debt to Income Ratio"
-            value={`${frontEndDTI.toFixed(1)}% / ${backEndDTI.toFixed(1)}%`}
-            subtitle="Allowable Debt to Income Ratio"
-            color="blue"
-          />
-          <MetricCard
-            title="Purchase Price"
-            value={`$${homePrice.toLocaleString()}`}
-            subtitle={`Down Payment: $${downPaymentAmount.toLocaleString()}`}
-            color="blue"
-          />
-        </div>
+      {/* Results Panel */}
+      <div className="space-y-6">
+        {/* Monthly Payment Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Monthly Payment</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-primary">
+                ${totalMonthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </div>
+              <p className="text-sm text-muted-foreground">Total Monthly Payment</p>
+            </div>
+            
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Loan Amount:</span>
+                <span>${loanAmount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Loan Term:</span>
+                <span>30 Years</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Payment Breakdown */}
+        {/* DTI Ratios */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Debt-to-Income Ratio</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm">Front-end DTI</span>
+                  <span className={`text-sm font-medium ${frontEndDTI > 28 ? 'text-destructive' : 'text-success'}`}>
+                    {frontEndDTI.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="w-full bg-secondary rounded-full h-2">
+                  <div 
+                    className={`h-2 rounded-full ${frontEndDTI > 28 ? 'bg-destructive' : 'bg-success'}`}
+                    style={{ width: `${Math.min(frontEndDTI, 100)}%` }}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm">Back-end DTI</span>
+                  <span className={`text-sm font-medium ${backEndDTI > maxAllowedDTI ? 'text-destructive' : 'text-success'}`}>
+                    {backEndDTI.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="w-full bg-secondary rounded-full h-2">
+                  <div 
+                    className={`h-2 rounded-full ${backEndDTI > maxAllowedDTI ? 'bg-destructive' : 'bg-success'}`}
+                    style={{ width: `${Math.min(backEndDTI, 100)}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Max: {maxAllowedDTI}% for {currentProgram?.name}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Payment Breakdown Chart */}
         <Card>
           <CardHeader>
             <CardTitle>Payment Breakdown</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="w-64 h-64 mx-auto">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={paymentBreakdown}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        dataKey="value"
-                      >
-                        {paymentBreakdown.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<CustomTooltip />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">
-                    ${totalMonthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={paymentBreakdown}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    dataKey="value"
+                  >
+                    {paymentBreakdown.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            
+            <div className="space-y-2 mt-4">
+              {paymentBreakdown.map((item, index) => (
+                <div key={index} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span>{item.name}</span>
                   </div>
-                  <div className="text-sm text-muted-foreground">per month</div>
+                  <span>${item.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                 </div>
-              </div>
-              
-              <div className="space-y-3">
-                {paymentBreakdown.map((item) => (
-                  <div key={item.name} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-4 h-4 rounded"
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <span className="text-sm">{item.name}</span>
-                    </div>
-                    <span className="font-medium">${item.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Loan Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Loan Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span>Home Value:</span>
-                  <span className="font-medium">${homePrice.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Monthly Conventional Payment:</span>
-                  <span className="font-medium">${monthlyPI.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                </div>
-                {monthlyPMI > 0 && (
-                  <div className="flex justify-between">
-                    <span>Monthly Estimated PMI:</span>
-                    <span className="font-medium">${monthlyPMI.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                  </div>
-                )}
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span>Mortgage Amount:</span>
-                  <span className="font-medium">${loanAmount.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Down Payment:</span>
-                  <span className="font-medium">${downPaymentAmount.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Summary */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-blue-900 mb-2">Summary:</h3>
-            <p className="text-sm text-blue-800">
-              Based on what you input today your Total Payment would be{" "}
-              <span className="font-bold">${totalMonthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span> on a{" "}
-              <span className="font-bold">{currentProgram?.name}</span> Loan with a{" "}
-              <span className="font-bold">{downPaymentPercent}%</span> Down Payment. Your{" "}
-              <span className="font-bold">Debt-to-Income Ratio</span> is{" "}
-              <span className="font-bold">{backEndDTI.toFixed(1)}%</span> and the{" "}
-              <span className="font-bold">maximum allowable on this program type is {maxAllowedDTI}%</span>.
-            </p>
-          </CardContent>
-        </Card>
+        {/* Get Quote Button */}
+        <Button className="w-full" size="lg">
+          Get A Quote
+        </Button>
       </div>
     </div>
   );
